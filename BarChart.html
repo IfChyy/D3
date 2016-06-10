@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+    <script src="JavaScript\BarChart.js"></script>
+    <link rel="stylesheet" href="CSS\BarChart.css">
+    <title>Title</title>
+</head>
+<body onload="drawChart(prepare(data()))">
+<div id="buttons">
+    <ul>
+        <li id="7Days"  onclick="sevenDays()";redrawText() >7Days</li>
+        <li id="14Days" onclick="fourteenDays()" >14Days</li>
+        <li id="30Days" onclick="oneMonth()" >30Days</li>
+        <li id="90Days" onclick="threeMonths()" >90Days</li>
+    </ul>
+</div>
+    <div id="myChart">
+
+    </div>
+
+<p id="demo"></p>
+
+
+</body>
+</html>

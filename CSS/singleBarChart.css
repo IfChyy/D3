@@ -1,0 +1,19 @@
+.axis path,
+.axis line{
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text{
+    font-size: 60%;
+    font-family: sans-serif;
+}
+
+rect:hover{
+    fill: green;
+}
+
+.barInfo{
+    font-size: 90%;
+}

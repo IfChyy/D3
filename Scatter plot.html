@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scatter plot</title>
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+
+<script>
+    var dataset = [
+        [ 8,     20 ],
+        [ 480,   90 ],
+        [ 250,   50 ],
+        [ 100,   33 ],
+        [ 330,   90 ],
+        [ 410,   12 ],
+        [ 475,   44 ],
+        [ 25,    67 ],
+        [ 85,    21 ],
+        [ 220,   88 ]
+    ];
+//widht and height of svg
+    var w = 500;
+    var h = 100;
+    // creating the svg in the body
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h);
+//creatig border for the svg to be a rect with width of 2
+    var borderPath  = svg.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", w)
+            .attr("height", h)
+            .style("stroke", "black")
+            .style("fill", "none")
+            .style("stroke-width", 2);
+// creating circles in the svg to represent a scatter plot
+    //using cx and cy as center points as x and y for every point
+    //r - radius of every point
+   var circle = svg.selectAll("circle")
+            .data(dataset)
+            .enter()
+            .append("circle")
+           .attr("cx", function (d){
+               return d[0];
+           })
+           .attr("cy", function(d){
+               return d[1];
+           })
+           .attr("r", 5);
+
+    //creating text points for every point to represent its value
+    var pointvalue = svg.selectAll("text")
+            .data(dataset)
+            .enter()
+            .append("text")
+            .text(function(d){
+                return d[0] + "," + d[1];
+            })
+            .attr("x", function(d){
+                return d[0] + 6;
+            })
+            .attr("y", function(d){
+                return d[1];
+            })
+            .attr("font-size", "75%")
+
+
+</script>
+</body>
+</html>

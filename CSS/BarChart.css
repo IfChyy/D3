@@ -1,0 +1,36 @@
+#myChart {
+    width  : 500px;
+    height : 300px;
+}
+
+.border {
+    stroke: black;
+    fill: none;
+    stroke-width: 2px;
+}
+.xAxis path,
+.xAxis line {
+    stroke: #333;
+    fill: transparent;
+    shape-rendering: crispEdges;
+}
+
+.xAxis text {
+    font-size: 11px;
+}
+
+.xAxis .dayticks {
+    stroke: #999;
+}
+
+ul li{
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: darkgrey;
+    color: white;
+}
+
+rect:hover{
+    fill: #0ff;
+}

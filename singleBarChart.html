@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="CSS\singleBarChart.css">
+    <script  src="javascript.js"></script>
+
+    <title>D3 Test</title>
+</head>
+<body>
+<script>
+    var dataset = [
+            ["Mon", 5],
+            ["Tue", 8],
+            ["Wed", 15],
+            ["Thu", 6],
+            ["Fri", 21],
+            ["Sat", 27],
+            ["Sun", 6],
+    ];
+    /*for(var i = 0; i< 30; i++){
+        var newNumber = Math.round(Math.random() * 30);
+        dataset.push(newNumber);
+    }*/
+
+   /* for(var i = 0; i < 3; i++){
+        var newNumber = Math.round(Math.random()*100);
+        var newNumber1 = i;
+        dataset.push([newNumber1 ,Math.round(Math.random() *newNumber)]);
+    };*/
+
+
+    //creating a bar chart inside SVG
+    var w = 500;
+    var h = 300;
+    var padding = {
+        top: 40,
+        bottom: 5,
+        left: 40,
+        right: 5
+    };
+    var weekdays = ["Mon","Tues","Wed","Thurs","Fri","Sat","Sun"];
+    var formatDay = function(d) {
+        return weekdays[d % 7] + "day";
+    }
+
+
+
+    var xScale = d3.scale.ordinal()
+            // .domain(d3.range(d3.max(dataset, function(d){return d[1];})))7
+            .domain(dataset.map(function(d){return d[0]}))
+            .rangeRoundBands([padding.left, w], 0.3);
+
+    var yScale = d3.scale.linear()
+            .domain([0, d3.max(dataset, function(d){return d[1];})])
+            .range([h -padding.left, padding.top]);
+
+
+    //create SVG
+    d3.select("body")
+            .append("p")
+            .text("SVG BAR CHART");
+
+    var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w )
+            .attr("height", h );
+
+
+    var svgBorder = svg.append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", w )
+            .attr("height", h)
+            .style("stroke", "black")
+            .style("stroke-width", 2)
+            .style("fill", "none");
+
+
+    var xAxis = d3.svg.axis()
+            .scale(xScale)
+            .orient("bottom");
+
+
+    svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + (h-padding.top ) + ")")
+            .call(xAxis)
+            .append("text")
+            .attr("x", "40%")
+            .attr("y", 25)
+            .attr("dy", 5)
+            .text("Period: Days")
+            .style("font-size", "90%");
+
+
+    var yAxis = d3.svg.axis()
+            .scale(yScale)
+            .orient("left");
+
+    svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(" + padding.left+ ",0)")
+            .call(yAxis)
+            .append("text")
+            .attr("x", "-9%")
+            .attr("y", "-68%")
+            .attr("dy", 180)
+            .attr("dx",-150)
+            .text("Glucose levels")
+            .attr("transform","rotate(-90)")
+            .style("font-size", "90%");
+
+    var colors = d3.scale.category10();
+
+    var dayRange = Math.round((w -40)/ (dataset.length));
+
+    var bars = svg.selectAll(".rect")
+            .data(dataset)
+            .enter()
+            .append("rect")
+            .attr("width", 20)
+            .attr("height", 100)
+            .attr("class", "bar")
+
+            .attr("x", function(d ){
+                 return  xScale(d[0]);
+            })
+            .attr("width", xScale.rangeBand())
+            .attr("height", function(d){
+                return  h - padding.left - yScale(d[1]);
+            })
+            .attr("y", function(d){
+                return yScale(d[1]) - 0.1;
+            })
+            .attr("fill", function(d, i){
+                return colors(i);
+            })
+            ;
+
+
+  var barInfo = svg.selectAll(".text")
+          .data(dataset)
+          .enter()
+          .append("svg:text")
+          .attr("class", "barInfo")
+          .attr("x", function(d){
+              return xScale(d[0] );
+          })
+          .attr("y", function(d){
+              return yScale(d[1]);
+          })
+          .attr("dy", "-0.5%")
+          .attr("dx",  xScale.rangeBand()/2.2 )
+          .text(function(d) { return d3.format(",")(d[1])})
+          .attr("text-anchor","right");
+
+
+    var numbers = d3.select("body")
+            .append("p")
+            .text("database: " + dayRange);
+
+
+</script>
+</body>
+</html>

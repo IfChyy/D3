@@ -1,0 +1,40 @@
+.xaxis path,
+.xaxis line,
+.yaxis path,
+.yaxis line{
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges ;
+    stroke-width: 1px;
+
+}
+.xaxis .day-ticks {
+    stroke: #999;
+}
+#myChart {
+    width  : 500px;
+    height : 300px;
+}
+
+.grid-background {
+    fill: #ddd;
+}
+
+.grid line {
+    stroke: #939393 ;
+    stroke-dasharray: 8;
+    stroke-width: 0.5px;
+}
+
+.grid text,
+.grid1 text{
+    display: none;
+}
+
+.grid1 line{
+    stroke: #939393;
+    stroke-dasharray: 2;
+    stroke-width: 0.5px;
+}
+
+
