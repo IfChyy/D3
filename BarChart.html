@@ -12,11 +12,16 @@
 <body onload="drawChart(prepare(data()))">
 <div id="buttons">
     <ul>
-        <li id="7Days"  onclick="sevenDays()";redrawText() >7Days</li>
+        <li id="7Days"  onclick="sevenDays()" >7Days</li>
         <li id="14Days" onclick="fourteenDays()" >14Days</li>
         <li id="30Days" onclick="oneMonth()" >30Days</li>
         <li id="90Days" onclick="threeMonths()" >90Days</li>
     </ul>
+
+    <form>
+        <input  onclick="withTransitions()" id="withTransition" type="radio" name="transitions" value="Transition" checked> Transition
+        <input onclick="noTransitions()" id="noTransition" type="radio" name="transitions" value="No Transition"> No Transition
+    </form>
 </div>
     <div id="myChart">
 

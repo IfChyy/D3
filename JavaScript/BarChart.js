@@ -1,8 +1,10 @@
 var x = new Date();
 var svg;
+var svgBorder;
 var colors = d3.scale.category10();
-var test;
+
 var xScale;
+var yScale;
 var xAxis;
 var time;
 var daysShowing;
@@ -12,18 +14,17 @@ var margins;
 var barsWidth;
 var xAxisLabelPos;
 var barsTranslate;
-
-
+var xGrid;
+var yGrid;
+var transitionTime = 1000;
 
 var daysToShow = {
     presentDay: d3.time.day.offset(new Date(), 0),
     sevenDays: d3.time.day.offset((new Date()), -6),
     fourteenDays: d3.time.day.offset(new Date(), -13),
     oneMonth: d3.time.day.offset(new Date(), -29),
-    threeMonths: d3.time.day.offset(new Date(), -89),
-}
-
-
+    threeMonths: d3.time.day.offset(new Date(), -89)
+};
 
 function sevenDays() {
     if (document.getElementById("7Days")) {
@@ -34,11 +35,11 @@ function sevenDays() {
         barsWidth = (size.width/(daysShowing+1)*0.8);
 
         document.getElementById("demo").innerHTML = daysShowing+1;
-        barsTranslate =  margins.left + ((size.width/(daysShowing+1))-barsWidth)/2;
-        xAxisLabelPos = (size.width/(daysShowing+1))/4;
+        barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+1;
+        xAxisLabelPos = (size.width/(daysShowing+1))/3;
 
 
-        sevenDayChartChange()
+        sevenDayChartChange();
     }
 }
 function fourteenDays() {
@@ -51,10 +52,10 @@ function fourteenDays() {
 
         document.getElementById("demo").innerHTML = daysShowing+1;
 
-        barsTranslate =  margins.left + ((size.width/(daysShowing+1))-barsWidth)/2;
-        xAxisLabelPos = (size.width/(daysShowing+1))/5;
+        barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+1;
+        xAxisLabelPos = (size.width/(daysShowing+1))/8;
 
-        fourteenDaysChartChange()
+        fourteenDaysChartChange();
     }
 }
 function oneMonth() {
@@ -64,11 +65,14 @@ function oneMonth() {
         daysShowing = Math.round((daysToShow.presentDay -
             time)/1000/60/60/24);
 
+        barsWidth = (size.width/(daysShowing+1)*0.8);
+
         document.getElementById("demo").innerHTML = daysShowing+1;
 
-        xScale.domain([new Date(daysToShow.oneMonth), daysToShow.presentDay]);
+        barsTranslate =  margins.left + ((size.width/(daysShowing+1))-barsWidth);
+        xAxisLabelPos = (size.width/(daysShowing+1))/8;
 
-        redrawText()
+        oneMonthDayChartChange()
     }
 }
 function threeMonths(){
@@ -78,22 +82,16 @@ function threeMonths(){
         daysShowing = Math.round((daysToShow.presentDay -
             time)/1000/60/60/24);
 
-        document.getElementById("demo").innerHTML = daysShowing+1;
-        xScale.domain([new Date(daysToShow.threeMonths), daysToShow.presentDay]);
+        barsWidth = (size.width/(daysShowing+1)*0.8);
 
-        redrawText()
+        document.getElementById("demo").innerHTML = daysShowing+1;
+
+        barsTranslate =  margins.left + ((size.width/(daysShowing+1))-barsWidth);
+        xAxisLabelPos = (size.width/(daysShowing+1))/8;
+
+        threeMonthsDayChartChange()
     }
 }
-
-
-
-
-
-
-
-
-
-
 
 function prepare(data)
 {
@@ -145,7 +143,7 @@ function drawChart(data) {
         top: 10,
         right: 20,
         bottom: 30,
-        left: 50,
+        left: 50
     };
 
     size = {
@@ -153,19 +151,22 @@ function drawChart(data) {
         height: 300 - margins.top - margins.bottom
     };
 
-    daysShowing = Math.round((daysToShow.presentDay -daysToShow.sevenDays)/1000/60/60/24);
+   /* daysShowing = Math.round((daysToShow.presentDay -daysToShow.sevenDays)/1000/60/60/24);
     barsWidth = (size.width/(daysShowing+1)*0.8);
-    xAxisLabelPos = (size.width/(daysShowing+1))*0.3;
+    xAxisLabelPos = (size.width/(daysShowing+1))/3;
     barsTranslate =  margins.left + ((size.width/(daysShowing+1))-barsWidth)/2;
+*/
+
 
     svg = d3.select("#myChart")
         .append("svg")
+        .attr("id", "testing")
         .attr("width", size.width + margins.left + margins.right)
         .attr("height", size.height + margins.top + margins.bottom)
         .append("g");
     // .attr('transform', 'translate(' + margins.bottom + ',' + margins.top + ')');
 
-    var svgBorder = svg.append("rect")
+    svgBorder = svg.append("rect")
         .attr("class", "border")
         .attr("x", 0)
         .attr("y", 0)
@@ -179,61 +180,85 @@ function drawChart(data) {
         .range([0, size.width]);
 
 
-
     xAxis = d3.svg.axis()
         .scale(xScale)
-        .orient('bottom')
+        .orient("bottom")
         .ticks(d3.time.days, 1)
-        .tickSize(10)
-        .tickFormat(d3.time.format('%a%e'));
+        .tickSize(10,25)
+        .tickFormat(d3.time.format("%a%e"));
 
-    svg.append('g')
-        .attr('class', 'xAxis')
-        .attr("transform", "translate(" + margins.left + "," + (size.height-margins.top) + ")")
+    svg.append("g")
+        .attr("class", "xAxis")
+        .attr("transform", "translate(" + margins.left + "," + (size.height) + ")")
         .call(xAxis);
 
-    svg.select(".xAxis")
+  /* svg.select('.xAxis')
         .selectAll('line')
-        .data(xScale.ticks(d3.time.days, 6), function (d) {
-            return d;
-        })
-        .enter().append('line')
-        .attr('class', 'weekticks')
-        .attr('y1', 0)
-        .attr('y2', 8)
-        .attr('x1', xScale)
-        .attr('x2', xScale);
-
-    svg.select('.xAxis')
-        .selectAll('line')
-        .data(xScale.ticks(d3.time.days, 1), function (d) {
+        .data(xScale.ticks(d3.time.days, 1), function(d){
             return d;
         })
         .enter().append('line')
         .attr('class', 'dayticks')
         .attr('y1', 0)
-        .attr('y2', 5)
+        .attr('y2', 0)
         .attr('x1', xScale)
         .attr('x2', xScale);
 
+  svg.select('.xAxis')
+        .selectAll('line')
+        .data(xScale.ticks(d3.time.day , 7), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'weekticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale)
+      .style("stroke", "red");*/
 
     xAxisLabels = svg.select(".xAxis")
         .selectAll("text")
         .attr("class","dayText")
+        .style("font-size",12)
         .style("text-anchor", "start")
-        .attr("x", xAxisLabelPos);
+        .attr("dx", xAxisLabelPos)
+       ;
+
     //create yScale and axis with orient left
 
-    var yScale = d3.scale.linear()
+    yScale = d3.scale.linear()
         .domain([0, d3.max(data.map(function (d) {
             return d.value;
 
         }))])
-        .range([0,220]);
+        .range([size.height, margins.top]);
+
+    yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+
+    svg.append("g")
+        .attr("class", "yAxis")
+        .attr("transform", "translate(" +margins.left + ",0)")
+        .call(yAxis)
+        .append("text")
+        .text("days ")
+        .attr("dx", (size.width-margins.left-margins.right) /2)
+        .attr("dy", margins.bottom);
+
+   xGrid = svg.append("g")
+        .attr("class", "gridx")
+        .attr("transform", "translate(" + margins.left + ","
+            + (size.height + margins.top) + ")");
+
+    yGrid = svg.append("g")
+        .attr("class", "gridy")
+        .attr("transform", "translate(" + margins.left + ",0)");
 
     //create bars with data
     bar = svg.append("g")
-        .selectAll(".rect")
+        .selectAll("rect")
         .attr("class", "bars")
         .data(data)
         .enter()
@@ -242,11 +267,11 @@ function drawChart(data) {
             return xScale(d.date);
         })
         .attr("y", function(d){
-            return (size.height-margins.top) -yScale(d.value);
-        })
-        .attr("width", 50)
-        .attr("height", function(d){
             return yScale(d.value);
+        })
+        .attr("width", barsWidth)
+        .attr("height", function(d){
+            return size.height- yScale(d.value);
         })
         .attr("transform", "translate(" +barsTranslate + ",0)")
         .attr("fill", function(d, i){
@@ -256,65 +281,82 @@ function drawChart(data) {
 
 
 
-     test = d3.select("body")
-        .append("p")
-         .text("barWidth " + barsWidth)
-         .append("p")
-         .text("labelPos " + xAxisLabelPos)
-         .append("p")
-         .text("day width " + size.width/(daysShowing+1))
-         .append("p")
-         .text("days showing " + (daysShowing+1));
-
-
 
 }
     // function to change the graph to seven day view when button clicked
 function sevenDayChartChange(){
+    d3.select("#testing").remove();
+
+    drawChart(prepare(data()));
+
+
     /*changing the scale domain to present day minus seven days
       .nice = creates nice view of the xAxis ticks and labels */
     xScale.domain([daysToShow.sevenDays, daysToShow.presentDay])
-        .nice(d3.time.day);
+        .nice(d3.time.day.utc);
     // changes the tick labels to day of the week + day of month
     xAxis.tickFormat(d3.time.format('%a%e'))
-        .ticks(d3.time.days, 1);
+        .ticks(d3.time.day.utc, 1);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(1000).attr("width", barsWidth)
+    bar.transition().duration(transitionTime).attr("width", barsWidth)
         .attr("x", function(d){
             return xScale(d.date);
         })
         .attr("transform" , "translate(" + barsTranslate + ",0)");
     // calling the xaxis for approprieta time period
-    svg.select(".xAxis").transition().duration(1000).call(xAxis);
+    svg.select(".xAxis").transition().duration(transitionTime)
+        .call(xAxis);
     // allinging the axis labels
     svg.select(".xAxis")
         .selectAll("text").style("text-anchor", "start")
         .attr("dx", xAxisLabelPos);
 
+    svg.select(".xAxis").selectAll("line")
+       .attr("y2", 10);
 
-    svg.selectAll("line")
-        .data(xScale.ticks(d3.time.days, 1), function (d) {
-        return d;
-    })
-        .enter().append("line");
-    //test
-    test.text(xAxisLabelPos);
+
+    // creating dayticks colored in red to show every 7-th day
+    svg.select('.xAxis')
+        .selectAll('.line')
+        .data(xScale.ticks(d3.time.monday.utc), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'weekticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
+
+    svg.selectAll(".weekticks").transition().duration(transitionTime).attr("y2", 10);
+
+    svg.select(".gridx")
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat(""));
+
+    svg.select(".gridy")
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
+
 }
 
 // function to change the graph to fourteen day view when button clicked
 function fourteenDaysChartChange(){
+    d3.select("#testing").remove();
+
+    drawChart(prepare(data()));
     /*changing the scale domain to present day minus fourteen days
      .nice = creates nice view of the xAxis ticks and labels */
     xScale.domain([daysToShow.fourteenDays, daysToShow.presentDay])
-        .nice(d3.time.day);
-    /* changes the tick labels to day of the week + day of month
+        .nice(d3.time.day.utc);
+    /* changes the tick labels to  month number and day
         .ticks = change the shown labels on the axis */
-    xAxis.tickFormat(d3.time.format('%b%e'))
-        .ticks(d3.time.days, 1);
+    xAxis.tickFormat(d3.time.format('%m%.%d'))
+        .ticks(d3.time.monday.utc);
     // calling the xaxis for approprieta time period
-    svg.select(".xAxis").transition().duration(1000).call(xAxis);
+    svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(1000).attr("width", barsWidth)
+    bar.transition().duration(transitionTime).attr("width", barsWidth)
         .attr("x", function(d){
             return xScale(d.date);
         })
@@ -323,101 +365,202 @@ function fourteenDaysChartChange(){
     svg.select(".xAxis")
         .selectAll("text").style("text-anchor", "start")
         .attr("dx", xAxisLabelPos);
+    // creating dayticks colored in grey to show every day
+    svg.select('.xAxis')
+        .selectAll('line')
+        .data(xScale.ticks(d3.time.days.utc,1), function(d){
+            return d
+        })
+        .enter().append('line')
+        .attr('class', 'dayticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
 
+    // creating dayticks colored in red to show every 7-th day
+    svg.select('.xAxis')
+        .selectAll('.line')
+        .data(xScale.ticks(d3.time.monday.utc), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'weekticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
 
+    svg.selectAll(".dayticks").transition().duration(transitionTime).attr("y2", 10);
+    svg.selectAll(".weekticks").transition().duration(transitionTime).attr("y2", 10);
 
+    svg.select(".gridx")
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat("")
+            .ticks(d3.time.day.utc, 1));
 
-    //test
-    test.text(xAxisLabelPos);
-
+    svg.select(".gridy")
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
 
 
 
 }
 
-function redrawText(){
-    xAxis.tickFormat(d3.time.format('%b%e'));
+function oneMonthDayChartChange(){
+    d3.select("#testing").remove();
+    drawChart(prepare(data()));
+    /*changing the scale domain to present day minus 30 days
+     .nice = creates nice view of the xAxis ticks and labels */
+    xScale.domain([daysToShow.oneMonth, daysToShow.presentDay])
+        .nice(d3.time.day.utc);
+    /* changes the tick labels to month number and day
+     .ticks = change the shown labels on the axis */
+    xAxis.tickFormat(d3.time.format("%m%.%d"))
+        .ticks(d3.time.monday.utc);
+    // calling the xaxis for approprieta time period
+    svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
+    // transitions the bars to seven days with appropriete width and padding
+    bar.transition().duration(transitionTime).attr("width", barsWidth)
+        .attr("x", function (d){
+         return xScale(d.date);
+        })
+        .attr("transform", "translate(" + barsTranslate + ",0)");
+    // allinging the axis labels
+    svg.select(".xAxis")
+        .selectAll("text").style("text-anchor", "start")
+        .attr("dx", xAxisLabelPos);
 
-    svg.select(".xAxis").transition().duration(1000).call(xAxis)
-        .attr("x", 5);
+    // creating dayticks colored in grey to show every day
+    svg.select('.xAxis')
+        .selectAll('line')
+        .data(xScale.ticks(d3.time.day.utc, 1), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'dayticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
 
+// creating dayticks colored in red to show every 7-th day
+    svg.select('.xAxis')
+        .selectAll('.line')
+        .data(xScale.ticks(d3.time.monday.utc), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'weekticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
 
+    svg.selectAll(".weekticks").transition().duration(transitionTime).attr("y2", 10);
+    svg.selectAll(".dayticks").transition().duration(transitionTime).attr("y2", 10);
 
+    svg.select(".gridx")
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat("")
+            .ticks(d3.time.day.utc, 1));
 
-
-
-    bar.transition().duration(1000).attr("width", size.width/(daysShowing+1)*0.8)
-        .attr("x", function(d){
-        return xScale(d.date);
-    })
-
-
+    svg.select(".gridy")
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
 }
+
+function threeMonthsDayChartChange(){
+    d3.select("#testing").remove();
+    drawChart(prepare(data()));
+    /*changing the scale domain to present day minus 90 days
+     .nice = creates nice view of the xAxis ticks and labels */
+    xScale.domain([new Date(daysToShow.threeMonths), daysToShow.presentDay])
+        .nice(d3.time.day.utc);
+    /* changes the tick labels to month number and day
+     .ticks = change the shown labels on the axis */
+    xAxis.tickFormat(d3.time.format("%m%.%d"))
+        .ticks(d3.time.monday.utc);
+
+    // calling the xaxis for approprieta time period
+    svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
+    // transitions the bars to seven days with appropriete width and padding
+    bar.transition().duration(transitionTime).attr("width", barsWidth)
+        .attr("x", function (d){
+            return xScale(d.date);
+        })
+        .attr("transform", "translate(" + barsTranslate + ",0)");
+    // allinging the axis labels
+    svg.select(".xAxis")
+        .selectAll("text").style("text-anchor", "start")
+        .attr("dx", xAxisLabelPos);
+
+    // creating dayticks colored in grey to show every day
+    svg.select('.xAxis')
+        .selectAll('line')
+        .data(xScale.ticks(d3.time.day.utc, 1), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'dayticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
+
+// creating dayticks colored in red to show every 7-th day
+    svg.select('.xAxis')
+        .selectAll('.line')
+        .data(xScale.ticks(d3.time.monday.utc), function(d){
+            return d;
+        })
+        .enter().append('line')
+        .attr('class', 'weekticks')
+        .attr('y1', 0)
+        .attr('y2', 0)
+        .attr('x1', xScale)
+        .attr('x2', xScale);
+
+    svg.selectAll(".weekticks").transition().duration(transitionTime).attr("y2", 10);
+    svg.selectAll(".dayticks").transition().duration(transitionTime).attr("y2", 10);
+
+    svg.select(".gridx")
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat("")
+            .ticks(d3.time.monday.utc));
+
+    svg.select(".gridy")
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
+}
+
+function noTransitions(){
+    if(document.getElementById("noTransition")){
+        transitionTime = 0;
+        d3.select("body").append("p").text(transitionTime);
+    }
+}
+
+function withTransitions(){
+    if(document.getElementById("noTransition")){
+        transitionTime = 1000;
+        d3.select("body").append("p").text(transitionTime);
+    }
+}
+
 
 function data() {
     return [
-        {'date': '2016-06-3', 'value': 10},
-        {'date': '2016-06-4', 'value': 20},
-        {'date': '2016-06-5', 'value': 30},
-        {'date': '2016-06-6', 'value': 40},
-        {'date': '2016-06-7', 'value': 50},
-        {'date': '2016-06-8', 'value': 60},
-        {'date': '2016-06-9', 'value': 70},
-        {'date': '2016-06-10', 'value': 80},
+        {'date': '2016-06-9', 'value': 10},
+        {'date': '2016-06-10', 'value': 20},
+        {'date': '2016-06-11', 'value': 30},
+        {'date': '2016-06-12', 'value': 40},
+        {'date': '2016-06-13', 'value': 50},
+        {'date': '2016-06-14', 'value': 60},
+        {'date': '2016-06-15', 'value': 70}
 
     ];
 }
 
 
-/* function showDays() {
- window.onload = function() {
- document.getElementById("7Days").innerHTML = "SADS ";
-
- document.getElementById("14Days").addEventListener("onclick", fourtheenDays);
- document.getElementById("30Days").onclick = thirtyDays();
- document.getElementById("90Days").onclick = ninetyDays();
-
- function sevenDays() {
- return d3.time.day.offset(new Date(), -7);
- }
-
- function fourtheenDays() {
- return d3.time.day.offset(new Date(), -14);
- }
-
- function thirtyDays() {
- return d3.time.day.offset(new Date(), -30);
- }
-
- function ninetyDays() {
- return d3.time.day.offset(new Date(), -90);
- }
- }
- }
-
-
-
-
- function changeDays() {
- if (document.getElementById("14Days")) {
- xScale.domain([daysToShow.sevenDays, daysToShow.presentDay]);
-
- var t= svg.transition().duration(750);
- t.select(".xAxis").selectAll(".line")
- //  .data(xScale.domain([daysToShow.fourteenDays, daysToShow.presentDay]))
- .data(xScale.ticks(d3.time.days, 1), function (d) {
- return d;
- })
- .enter().append('line')
- .attr('y1', 0)
- .attr('y2', 5)
- .attr('x1', xScale)
- .attr('x2', xScale);
-
-
- document.getElementById("demo").innerHTML = xScale.domain();
- }
- }*/
-
-drawChart(prepare(data()));
 
