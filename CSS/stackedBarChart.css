@@ -1,0 +1,84 @@
+.border {
+    stroke: black;
+    fill: none;
+    stroke-width: 2px;
+}
+.xAxis path,
+.xAxis line,
+.yAxis path,
+.yAxis line{
+    stroke: #333;
+    fill: transparent;
+    shape-rendering: crispEdges;
+}
+
+.xAxis text {
+    font-size: 11px;
+}
+
+.xAxis .dayticks {
+    stroke: #999;
+}
+
+.xAxis .weekticks{
+    stroke: red;
+}
+#buttons ul form{
+    display: inline-block;
+}
+
+ul li{
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+    background-color: darkgrey;
+    color: white;
+}
+form {
+    display: inline-block;
+    margin: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+rect:hover{
+    fill: #0ff;
+}
+
+
+.gridx-background,
+.gridy-background{
+    fill: #ddd;
+}
+
+.gridx line,
+.gridy line{
+    stroke: #939393 ;
+    stroke-dasharray: 8;
+    stroke-width: 1px;
+}
+
+.gridx text,
+.gridy text{
+    display: none;
+}
+
+.gridx line {
+    stroke-dasharray: 2;
+}
+.gridy line {
+    stroke-dasharray: 5;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    width: 100px;
+    height: 30px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}
