@@ -1,6 +1,3 @@
-/**
- * Created by azifchyy on 16.6.2016 г..
- */
 var x = new Date();
 
 var  margins = {
@@ -26,7 +23,7 @@ var daysToShow = {
 var daysShowing =  Math.round((daysToShow.presentDay -daysToShow.sevenDays)/1000/60/60/24);
 var barsWidth = (size.width/(daysShowing+1)*0.8);
 var xAxisLabelPos = (size.width/(daysShowing+1))/3;
-var barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+1;
+var  barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth)/2)
 var svg;
 var svgBorder;
 var xScale;
@@ -37,7 +34,8 @@ var xGrid;
 var yGrid;
 var time;
 var bar;
-var colors = d3.scale.category10();
+var colors =d3.scale.category10();
+
 var transitionTime = 0;
 
 function sevenDays() {
@@ -152,12 +150,31 @@ function prepare(data)
 
 function drawChart(data) {
 
+    var stack = d3.layout.stack()
+        .y(function (d) {
+            return d.value;
+        })
+        .values(function (d) {
+            return d.values;
+        });
+
+    var nested = d3.nest()
+        .key(function (d) {
+            return d.type
+        })
+        .entries(data);
+
+    var layers = stack(nested)
+
+    /* d3.select("body").append("pre")
+     .text(JSON.stringify(layers, null,2));*/
+
+
     svg = d3.select("#myChart")
         .append("svg")
         .attr("id", "testing")
         .attr("width", size.width + margins.left + margins.right)
-        .attr("height", size.height + margins.top + margins.bottom)
-        .append("g");
+        .attr("height", size.height + margins.top + margins.bottom);
     // .attr('transform', 'translate(' + margins.bottom + ',' + margins.top + ')');
 
     svgBorder = svg.append("rect")
@@ -167,9 +184,6 @@ function drawChart(data) {
         .attr("width", size.width + margins.left + margins.right)
         .attr("height", size.height + margins.bottom + margins.top);
 
-
-    var xScaleTwo = d3.scale.ordinal()
-        .
     //create xScale and xAxis to be time stamped and orient bottom
     xScale = d3.time.scale()
         .domain([daysToShow.sevenDays, daysToShow.presentDay])
@@ -180,7 +194,7 @@ function drawChart(data) {
         .scale(xScale)
         .orient("bottom")
         .ticks(d3.time.days, 1)
-        .tickSize(10,25)
+        .tickSize(10, 25)
         .tickFormat(d3.time.format("%a%e"));
     xGrid = svg.append("g")
         .attr("class", "gridx")
@@ -193,21 +207,23 @@ function drawChart(data) {
         .call(xAxis);
 
 
-
     xAxisLabels = svg.select(".xAxis")
         .selectAll("text")
-        .attr("class","dayText")
-        .style("font-size",12)
+        .attr("class", "dayText")
+        .style("font-size", 12)
         .style("text-anchor", "start")
         .attr("dx", xAxisLabelPos);
 
-    //create yScale and axis with orient left
-    yScale = d3.scale.linear()
-        .domain([0, d3.max(data.map(function (d) {
-            return d.value;
 
-        }))])
+    //new y scale for stacked bars
+    yScale = d3.scale.linear()
+        .domain([0, d3.max(layers, function (layer) {
+            return d3.max(layer.values, function (d) {
+                return d.y;
+            })
+        })])
         .range([size.height, margins.top]);
+
 
     yAxis = d3.svg.axis()
         .scale(yScale)
@@ -219,12 +235,8 @@ function drawChart(data) {
 
     svg.append("g")
         .attr("class", "yAxis")
-        .attr("transform", "translate(" +margins.left + ",0)")
-        .call(yAxis)
-        .append("text")
-        .text("days ")
-        .attr("dx", (size.width-margins.left-margins.right) /2)
-        .attr("dy", margins.bottom);
+        .attr("transform", "translate(" + margins.left + ",0)")
+        .call(yAxis);
 
 
     var tooltip = d3.select("body")
@@ -235,7 +247,7 @@ function drawChart(data) {
         .text("a simple tooltip");
 
 
-    /* svg.select('.xAxis')
+    /*  svg.select('.xAxis')
      .selectAll('line')
      .data(xScale.ticks(d3.time.days, 1), function(d){
      return d;
@@ -249,16 +261,17 @@ function drawChart(data) {
 
      svg.select('.xAxis')
      .selectAll('line')
-     .data(xScale.ticks(d3.time.day , 7), function(d){
+     .data(xScale.ticks(d3.time.monday), function(d){
      return d;
      })
      .enter().append('line')
      .attr('class', 'weekticks')
      .attr('y1', 0)
-     .attr('y2', 0)
+     .attr('y2', 10)
      .attr('x1', xScale)
      .attr('x2', xScale)
      .style("stroke", "red");*/
+
     var formatTime = d3.time.format("%e %B");
 
     var div = d3.select("body").append("div")
@@ -266,44 +279,71 @@ function drawChart(data) {
         .style("opacity", 0);
 
 
+    colors.domain(layers.map(function (layer) {
+        return layer.key
+    }))
     //create bars with data
-    bar = svg.append("g")
-        .selectAll("rect")
-        .attr("class", "bars")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("x", function(d){
-            return xScale(d.date);
+
+    var dateDays = svg.selectAll(".layer").data(layers);
+    dateDays.enter().append("g");
+    dateDays.exit().remove();
+    dateDays.attr("class", "layers")
+        .style("fill", function (d) {
+            return colors(d.key);
+        });
+
+
+    bar = dateDays.selectAll("rect").data(function (d) {
+        return d.values;
+    });
+    bar.enter().append("rect");
+    bar.exit().remove();
+    bar.attr("x", function (d, i, j) {
+            return xScale(d.date) + barsWidth/3*j;
         })
-        .attr("y", function(d){
-            return yScale(d.value);
+        .attr("y", function (d) {
+            return yScale( d.y);
         })
-        .attr("width", barsWidth)
-        .attr("height", function(d){
-            return size.height- yScale(d.value);
+        .attr("width", barsWidth /3)
+        .attr("height", function (d) {
+            return size.height - yScale(d.y);
         })
-        .attr("transform", "translate(" +barsTranslate + ",0)")
-        .attr("fill", function(d, i){
-            return colors(i);
-        })
-        .on("mouseover", function(d) {
+        .attr("transform", "translate(" + barsTranslate + ",0)")
+        .on("mouseover", function (d) {
             div.transition()
                 .duration(200)
                 .style("opacity", .9);
-            div .html(formatTime(d.date) + "<br/>" +"Glucose level:" + d.value)
+            div.html(formatTime(d.date) + "<br/>" + d.type + " level:" + d.y)
                 .style("left", (d3.event.pageX) + "px")
                 .style("top", (d3.event.pageY - 30) + "px");
 
         })
-        .on("mouseout", function(d) {
+        .on("mouseout", function (d) {
             div.transition()
                 .duration(500)
                 .style("opacity", 0);
         });
 
 
+    svg.select(".gridx").transition().duration(transitionTime)
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat(""));
 
+    svg.select(".gridy").transition().duration(transitionTime)
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
+
+    svg.select(".yAxis")
+        .append("text")
+        .text("days ")
+        .attr("dx", (size.width - margins.left - margins.right) / 2)
+        .attr("dy", margins.bottom);
+
+
+
+    d3.select("body")
+        .append("p")
+        .text(barsTranslate)
 
 }
 // function to change the graph to seven day view when button clicked
@@ -318,12 +358,15 @@ function sevenDayChartChange(){
     xScale.domain([daysToShow.sevenDays, daysToShow.presentDay])
         .nice(d3.time.day.utc);
     // changes the tick labels to day of the week + day of month
+
+
     xAxis.tickFormat(d3.time.format('%a%e'))
-        .ticks(d3.time.day.utc, 1);
+        .ticks(d3.time.day.utc, 1)
+        .tickSize(10, 25);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(transitionTime).attr("width", barsWidth)
-        .attr("x", function(d){
-            return xScale(d.date);
+    bar.transition().duration(transitionTime).attr("width", barsWidth/3)
+        .attr("x", function(d, i, j){
+            return xScale(d.date) + barsWidth/3*j;
         })
         .attr("transform" , "translate(" + barsTranslate + ",0)");
     // calling the xaxis for approprieta time period
@@ -374,13 +417,14 @@ function fourteenDaysChartChange(){
     /* changes the tick labels to  month number and day
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format('%m%.%d'))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(transitionTime).attr("width", barsWidth)
-        .attr("x", function(d){
-            return xScale(d.date);
+    bar.transition().duration(transitionTime).attr("width", barsWidth/3)
+        .attr("x", function(d, i, j){
+            return xScale(d.date) + barsWidth/3*j;
         })
         .attr("transform" , "translate(" + barsTranslate + ",0)");
     // allinging the axis labels
@@ -439,13 +483,14 @@ function oneMonthDayChartChange(){
     /* changes the tick labels to month number and day
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(transitionTime).attr("width", barsWidth)
-        .attr("x", function (d){
-            return xScale(d.date);
+    bar.transition().duration(transitionTime).attr("width", barsWidth/3)
+        .attr("x", function (d, i, j){
+            return xScale(d.date) + barsWidth/3*j;
         })
         .attr("transform", "translate(" + barsTranslate + ",0)");
     // allinging the axis labels
@@ -456,7 +501,7 @@ function oneMonthDayChartChange(){
     // creating dayticks colored in grey to show every day
     svg.select('.xAxis')
         .selectAll('line')
-        .data(xScale.ticks(d3.time.day.utc, 1), function(d){
+        .data(xScale.ticks(d3.time.day.utc), function(d){
             return d;
         })
         .enter().append('line')
@@ -502,14 +547,15 @@ function threeMonthsDayChartChange(){
     /* changes the tick labels to month number and day
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
 
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
-    bar.transition().duration(transitionTime).attr("width", barsWidth)
-        .attr("x", function (d){
-            return xScale(d.date);
+    bar.transition().duration(transitionTime).attr("width", barsWidth/3)
+        .attr("x", function (d, i, j){
+            return xScale(d.date) + barsWidth/3*j;
         })
         .attr("transform", "translate(" + barsTranslate + ",0)");
     // allinging the axis labels
@@ -573,16 +619,51 @@ function withTransitions(){
 
 function data() {
     return [
-        {'date': '2016-06-9', 'value': 10},
-        {'date': '2016-06-10', 'value': 26},
-        {'date': '2016-06-11', 'value': 35},
-        {'date': '2016-06-12', 'value': 42},
-        {'date': '2016-06-13', 'value': 55},
-        {'date': '2016-06-14', 'value': 67},
-        {'date': '2016-06-15', 'value': 70}
+        {'date': '2016-06-18', type: "Glucose", 'value' : 10},
+        {'date': '2016-06-18', type: "Lactose", 'value' : 30},
+        {'date': '2016-06-18', type: "Sugar", 'value' :  50},
+
+        {'date': '2016-06-19', type: "Glucose", 'value' : 10},
+        {'date': '2016-06-19', type: "Lactose", 'value' : 20},
+        {'date': '2016-06-19', type: "Sugar", 'value' :  25},
+
+        {'date': '2016-06-20', type: "Glucose", 'value' : 18},
+        {'date': '2016-06-20', type: "Lactose", 'value' : 17},
+        {'date': '2016-06-20', type: "Sugar", 'value' :  25},
+
+
 
     ];
 }
 
 
+
+/*
+ // Add a drop line to the y axis
+ if (dropDest.x !== null) {
+ chart._tooltipGroup.append("line")
+ .attr("class", "dimple-tooltip-dropline " + chart.customClassList.tooltipDropLine)
+ .attr("x1", (cx < dropDest.x ? cx + r + series.lineWeight + 2 : cx - r - series.lineWeight - 2))
+ .attr("y1", cy)
+ .attr("x2", (cx < dropDest.x ? cx + r + series.lineWeight + 2 : cx - r - series.lineWeight - 2))
+ .attr("y2", cy)
+ .call(function () {
+ if (!chart.noFormats) {
+ this.style("fill", "none")
+ .style("stroke", fill)
+ .style("stroke-width", 2)
+ .style("stroke-dasharray", ("3, 3"))
+ .style("opacity", opacity);
+ }
+ })
+ .transition()
+ .delay(animDuration / 2)
+ .duration(animDuration / 2)
+ .ease("linear")
+ // Added 1px offset to cater for svg issue where a transparent
+ // group overlapping a line can sometimes hide it in some browsers
+ // Issue #10
+ .attr("x2", (cx < dropDest.x ? dropDest.x - 1 : dropDest.x + 1));
+ }
+ */
 

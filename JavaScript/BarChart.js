@@ -23,7 +23,7 @@ var daysToShow = {
 var daysShowing =  Math.round((daysToShow.presentDay -daysToShow.sevenDays)/1000/60/60/24);
 var barsWidth = (size.width/(daysShowing+1)*0.8);
 var xAxisLabelPos = (size.width/(daysShowing+1))/3;
-var barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+1;
+var barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth)/2)+1;
 var svg;
 var svgBorder;
 var xScale;
@@ -46,7 +46,7 @@ function sevenDays() {
         barsWidth = (size.width/(daysShowing+1)*0.8);
 
         document.getElementById("demo").innerHTML = daysShowing+1;
-        barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+1;
+        barsTranslate =  (margins.left + ((size.width/(daysShowing+1))-barsWidth))+2;
         xAxisLabelPos = (size.width/(daysShowing+1))/3;
 
 
@@ -277,7 +277,7 @@ function drawChart(data) {
         .attr("height", function(d){
             return size.height- yScale(d.value);
         })
-        .attr("transform", "translate(" +barsTranslate + ",0)")
+        .attr("transform", "translate(" + barsTranslate + ",0)")
         .attr("fill", function(d, i){
             return colors(i);
         })
@@ -296,7 +296,13 @@ function drawChart(data) {
                 .style("opacity", 0);
         });
 
+    svg.select(".gridx").transition().duration(transitionTime)
+        .call(xAxis.scale(xScale)
+            .tickSize(-size.height, 0, 0).tickFormat(""));
 
+    svg.select(".gridy").transition().duration(transitionTime)
+        .call(yAxis.scale(yScale)
+            .tickSize(-size.width,0, 0).tickFormat(""));
 
 
 }
@@ -313,7 +319,8 @@ function sevenDayChartChange(){
         .nice(d3.time.day.utc);
     // changes the tick labels to day of the week + day of month
     xAxis.tickFormat(d3.time.format('%a%e'))
-        .ticks(d3.time.day.utc, 1);
+        .ticks(d3.time.day.utc, 1)
+        .tickSize(10, 25);
     // transitions the bars to seven days with appropriete width and padding
     bar.transition().duration(transitionTime).attr("width", barsWidth)
         .attr("x", function(d){
@@ -368,7 +375,8 @@ function fourteenDaysChartChange(){
     /* changes the tick labels to  month number and day
         .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format('%m%.%d'))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
    svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
@@ -433,7 +441,8 @@ function oneMonthDayChartChange(){
     /* changes the tick labels to month number and day
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
@@ -496,7 +505,8 @@ function threeMonthsDayChartChange(){
     /* changes the tick labels to month number and day
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
-        .ticks(d3.time.monday.utc);
+        .ticks(d3.time.monday.utc)
+        .tickSize(10, 25);
 
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
@@ -567,12 +577,12 @@ function withTransitions(){
 
 function data() {
     return [
-        {'date': '2016-06-9', 'value': 10},
-        {'date': '2016-06-10', 'value': 26},
-        {'date': '2016-06-11', 'value': 35},
-        {'date': '2016-06-12', 'value': 42},
-        {'date': '2016-06-13', 'value': 55},
-        {'date': '2016-06-14', 'value': 67},
+        {'date': '2016-06-16', 'value': 10},
+        {'date': '2016-06-17', 'value': 26},
+        {'date': '2016-06-18', 'value': 35},
+        {'date': '2016-06-19', 'value': 42},
+        {'date': '2016-06-20', 'value': 55},
+        {'date': '2016-06-21', 'value': 67},
         {'date': '2016-06-15', 'value': 70}
 
     ];

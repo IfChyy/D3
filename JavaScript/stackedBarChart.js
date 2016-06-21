@@ -374,7 +374,7 @@ function sevenDayChartChange(){
     // changes the tick labels to day of the week + day of month
     xAxis.tickFormat(d3.time.format('%a%e'))
         .ticks(d3.time.day.utc, 1)
-        .tickSize(10);
+        .tickSize(10, 25);
     // transitions the bars to seven days with appropriete width and padding
     bar.transition().duration(transitionTime).attr("width", barsWidth)
         .attr("x", function(d){
@@ -430,7 +430,7 @@ function fourteenDaysChartChange(){
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format('%m%.%d'))
         .ticks(d3.time.monday.utc)
-        .tickSize(10);
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
@@ -496,7 +496,7 @@ function oneMonthDayChartChange(){
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
         .ticks(d3.time.monday.utc)
-        .tickSize(10);
+        .tickSize(10, 25);
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
     // transitions the bars to seven days with appropriete width and padding
@@ -560,7 +560,7 @@ function threeMonthsDayChartChange(){
      .ticks = change the shown labels on the axis */
     xAxis.tickFormat(d3.time.format("%m%.%d"))
         .ticks(d3.time.monday.utc)
-        .tickSize(10);
+        .tickSize(10, 25);
 
     // calling the xaxis for approprieta time period
     svg.select(".xAxis").transition().duration(transitionTime).call(xAxis);
